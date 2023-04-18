@@ -1,14 +1,30 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+use crossbeam_channel::{unbounded, Receiver, Sender};
+use std::{
+    error::Error,
+    thread::{self, JoinHandle},
+};
+
+type Job = Box<dyn FnOnce() + Send + 'static>;
+
+enum Message {
+    NewJob(Job),
+    Terminate,
+    Idle,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#[derive(Debug)]
+pub enum ThreadPoolError {
+    FailedToSendJob,
+}
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+impl core::fmt::Display for ThreadPoolError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ThreadPoolError::FailedToSendJob => f.write_fmt(format_args!(
+                "Thread pool failed to send a job to it's worker!"
+            ))?,
+        };
+
+        Ok(())
     }
 }
