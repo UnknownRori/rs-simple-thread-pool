@@ -54,3 +54,34 @@ impl Worker {
         }
     }
 }
+
+#[derive(Debug)]
+pub struct ThreadPool {
+    sender: Sender<Message>,
+    workers: Vec<Worker>,
+}
+
+impl ThreadPool {
+    pub fn new(worker: usize) -> ThreadPool {
+        let mut workers = Vec::with_capacity(worker);
+
+        let (sender, receiver) = unbounded();
+
+        for _ in 0..worker {
+            workers.push(Worker::new(receiver.clone()));
+        }
+
+        ThreadPool { workers, sender }
+    }
+
+    pub fn execute<F>(&self, job: F) -> Result<(), ThreadPoolError>
+    where
+        F: FnOnce() + Send + 'static,
+    {
+        self.sender
+            .send(Message::NewJob(Box::new(job)))
+            .or_else(|_| Err(ThreadPoolError::FailedToSendJob))?;
+
+        Ok(())
+    }
+}
