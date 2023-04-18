@@ -28,3 +28,29 @@ impl core::fmt::Display for ThreadPoolError {
         Ok(())
     }
 }
+
+#[derive(Debug)]
+struct Worker {
+    thread: Option<JoinHandle<()>>,
+}
+
+impl Worker {
+    fn new(receiver: Receiver<Message>) -> Worker {
+        let thread = thread::spawn(move || loop {
+            let message = match receiver.recv() {
+                Ok(message) => message,
+                Err(_) => Message::Idle,
+            };
+
+            let _ = match message {
+                Message::NewJob(job) => job(),
+                Message::Terminate => break,
+                Message::Idle => (),
+            };
+        });
+
+        Worker {
+            thread: Some(thread),
+        }
+    }
+}
