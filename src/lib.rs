@@ -32,6 +32,11 @@ struct Worker {
 }
 
 impl Worker {
+    /// Creates a new [`Worker`].
+    ///
+    /// ## Panic
+    ///
+    /// May panic when the OS cannot create thread
     fn new(receiver: Receiver<Message>) -> Worker {
         let thread = thread::spawn(move || loop {
             let message = match receiver.recv() {
@@ -59,6 +64,11 @@ pub struct ThreadPool {
 }
 
 impl ThreadPool {
+    /// Creates a new [`ThreadPool`].
+    ///
+    /// ## Panic
+    ///
+    /// May panic if the OS cannot create thread
     pub fn new(worker: usize) -> ThreadPool {
         let mut workers = Vec::with_capacity(worker);
 
@@ -71,6 +81,12 @@ impl ThreadPool {
         ThreadPool { workers, sender }
     }
 
+    /// Execute a job to worker thread, it's require Closure with no param and no return
+    ///
+    /// ## Errors
+    ///
+    /// This function will return an error if the communication channel between worker thread
+    /// and main thread is closed.
     pub fn execute<F>(&self, job: F) -> Result<(), ThreadPoolError>
     where
         F: FnOnce() + Send + 'static,
