@@ -1,61 +1,14 @@
-use crossbeam_channel::{unbounded, Receiver, Sender};
-use std::thread::{self, JoinHandle};
+pub mod error;
+
+mod message;
+mod worker;
+
+use crossbeam_channel::{unbounded, Sender};
+use error::ThreadPoolError;
+use message::Message;
+use worker::Worker;
 
 type Job = Box<dyn FnOnce() + Send + 'static>;
-
-enum Message {
-    NewJob(Job),
-    Terminate,
-    Idle,
-}
-
-#[derive(Debug)]
-pub enum ThreadPoolError {
-    FailedToSendJob,
-}
-
-impl core::fmt::Display for ThreadPoolError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ThreadPoolError::FailedToSendJob => f.write_fmt(format_args!(
-                "Thread pool failed to send a job to it's worker!"
-            ))?,
-        };
-
-        Ok(())
-    }
-}
-
-#[derive(Debug)]
-struct Worker {
-    thread: Option<JoinHandle<()>>,
-}
-
-impl Worker {
-    /// Creates a new [`Worker`].
-    ///
-    /// ## Panic
-    ///
-    /// May panic when the OS cannot create thread
-    fn new(receiver: Receiver<Message>) -> Worker {
-        let thread = thread::spawn(move || loop {
-            let message = match receiver.recv() {
-                Ok(message) => message,
-                Err(_) => Message::Idle,
-            };
-
-            let _ = match message {
-                Message::NewJob(job) => job(),
-                Message::Terminate => break,
-                Message::Idle => (),
-            };
-        });
-
-        Worker {
-            thread: Some(thread),
-        }
-    }
-}
 
 #[derive(Debug)]
 pub struct ThreadPool {
@@ -106,7 +59,7 @@ impl Drop for ThreadPool {
         }
 
         for worker in &mut self.workers {
-            if let Some(thread) = worker.thread.take() {
+            if let Some(thread) = worker.take_thread() {
                 thread.join().unwrap();
             }
         }
