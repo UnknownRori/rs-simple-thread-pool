@@ -1,3 +1,5 @@
+use std::{thread, time::Duration};
+
 use crossbeam_channel::unbounded;
 
 use simple_thread_pool::{error::ThreadPoolError, ThreadPool};
@@ -17,7 +19,8 @@ fn test_crossbeam() -> Result<(), ThreadPoolError> {
 
         pool.execute(move || {
             for _ in 0..40 {
-                // Do some long proccess
+                // Simulate long process
+                thread::sleep(Duration::from_millis(10));
             }
 
             send.send(40).unwrap();
