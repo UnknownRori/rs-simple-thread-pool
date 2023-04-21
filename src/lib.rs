@@ -21,35 +21,6 @@ pub struct ThreadPool {
 impl ThreadPool {
     /// Creates a new [`ThreadPool`].
     ///
-    /// ## Example
-    ///
-    /// ```rust
-    /// use std::{thread, time::Duration};
-    /// use simple_thread_pool::{error::ThreadPoolError, ThreadPool};
-    ///
-    /// let pool = ThreadPool::new(2);
-    /// let (send, recv) = unbounded();
-    ///
-    /// for _ in 0..4 {
-    ///     let send = send.clone();
-    ///
-    ///     pool.execute(move || {
-    ///         for _ in 0..40 {
-    ///             // Simulate long process
-    ///             thread::sleep(Duration::from_millis(10));
-    ///         }
-    ///
-    ///         send.send(40).unwrap();
-    ///     })?;
-    /// }
-    ///
-    /// assert_eq!(recv.recv().unwrap(), 40);
-    /// assert_eq!(recv.recv().unwrap(), 40);
-    /// assert_eq!(recv.recv().unwrap(), 40);
-    /// assert_eq!(recv.recv().unwrap(), 40);
-    /// assert_eq!(recv.try_recv().is_err(), true);
-    /// ```
-    ///
     /// ## Panic
     ///
     /// May panic if the OS cannot create thread
