@@ -14,6 +14,7 @@ impl Worker {
     /// ## Panic
     ///
     /// May panic when the OS cannot create thread
+    #[cfg(feature = "crossbeam")]
     pub fn new(receiver: Receiver<Message>) -> Worker {
         let thread = thread::spawn(move || loop {
             let message = match receiver.recv() {
