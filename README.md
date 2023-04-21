@@ -8,7 +8,7 @@ Make sure you have installed cargo and git
 
 ```bash
 # clone repository
-> git clone https://github.com/UnknownRori/simple-rust-thread-pool
+> git clone https://github.com/UnknownRori/rs-simple-thread-pool
 
 # enter cloned repository
 > cd simple-rust-thread-pool
@@ -18,6 +18,8 @@ Make sure you have installed cargo and git
 ```
 
 ## 🚀 Usage
+
+Still in development
 
 ## 🌟 Contribution
 
