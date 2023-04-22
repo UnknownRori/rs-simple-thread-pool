@@ -2,7 +2,7 @@
 name = "unknownrori-simple-thread-pool"
 version = "0.1.2"
 edition = "2021"
-author = ["UnknownRori <68576836+UnknownRori@users.noreply.github.com>"]
+authors = ["UnknownRori <68576836+UnknownRori@users.noreply.github.com>"]
 description = "A very simple thread pool for networking and other stuff"
 license = "MIT"
 repository = "https://github.com/UnknownRori/rs-simple-thread-pool"
