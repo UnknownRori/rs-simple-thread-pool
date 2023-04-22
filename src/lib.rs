@@ -21,6 +21,51 @@ use worker::Worker;
 
 type Job = Box<dyn FnOnce() + Send + 'static>;
 
+/// This is where the thread will be pooled
+///
+/// It depend on how you add this package on your project
+/// you can either using Rust standard library
+/// or you can use `crossbeam-channel`, the API is the same even on different feature flag.
+///
+/// ## Examples
+///
+/// ```rust,no_run
+/// use std::{
+///     io::Write,
+///     net::{TcpListener, TcpStream},
+///     thread,
+///     time::Duration,
+/// };
+///
+/// use unknownrori_simple_thread_pool::{error::ThreadPoolError, ThreadPool};
+///
+/// fn handle_connection(mut stream: TcpStream) {
+///     thread::sleep(Duration::from_secs(2));
+///
+///     let response = "HTTP/1.1 200 OK\r\nContent-Length: 3\r\n\r\nHi!";
+///
+///     stream.write_all(response.as_bytes()).unwrap();
+///
+///     thread::sleep(Duration::from_secs(2));
+/// }
+///
+/// fn main() -> Result<(), ThreadPoolError> {
+///     let pool = ThreadPool::new(2);
+///
+///     let socket = TcpListener::bind("127.0.0.1:8000").unwrap();
+///     println!("server started at http://127.0.0.1:8000");
+///
+///     for stream in socket.incoming() {
+///         println!("Got stream!");
+///         match stream {
+///             Ok(stream) => pool.execute(|| handle_connection(stream))?,
+///             Err(_) => eprintln!("Something is wrong!"),
+///         }
+///     }
+///
+///     Ok(())
+/// }
+/// ```
 #[derive(Debug)]
 pub struct ThreadPool {
     sender: Sender<Message>,
@@ -29,6 +74,31 @@ pub struct ThreadPool {
 
 impl ThreadPool {
     /// Creates a new [`ThreadPool`].
+    ///
+    /// ## Examples
+    ///
+    /// ```rust,no_run
+    /// use std::{thread, time::Duration};
+    ///
+    /// use unknownrori_simple_thread_pool::{
+    ///     crossbeam_channel::unbounded,
+    ///     error::ThreadPoolError,
+    ///     ThreadPool,
+    /// };
+    ///
+    /// fn main() -> Result<(), ThreadPoolError> {
+    ///     let pool = ThreadPool::new(2);
+    ///     let (send, recv) = unbounded();
+    ///
+    ///     pool.execute(move || {
+    ///         send.send(40).unwrap();
+    ///     })?;
+    ///
+    ///     assert_eq!(recv.recv().unwrap(), 40);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
     ///
     /// ## Panic
     ///
@@ -47,6 +117,28 @@ impl ThreadPool {
     }
 
     /// Creates a new [`ThreadPool`].
+    ///
+    /// ## Examples
+    ///
+    /// ```rust,no_run
+    /// use std::sync::mpsc::channel;
+    /// use std::{thread, time::Duration};
+    ///
+    /// use unknownrori_simple_thread_pool::{error::ThreadPoolError, ThreadPool};
+    ///
+    /// fn main() -> Result<(), ThreadPoolError> {
+    ///     let pool = ThreadPool::new(2);
+    ///     let (send, recv) = channel();
+    ///
+    ///     pool.execute(move || {
+    ///         send.send(40).unwrap();
+    ///     })?;
+    ///
+    ///     assert_eq!(recv.recv().unwrap(), 40);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
     ///
     /// ## Panic
     ///

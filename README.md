@@ -7,56 +7,47 @@ A Thread Pool that focused on lightweight.
 By default `unknownrori-simple-thread-pool` uses `crossbeam-channel` not `mpsc` that standard library provided
 
 ```sh
+# If you want to use crossbeam-channel package
 > cargo add unknownrori-simple-thread-pool
-```
 
-### crossbeam-channel
-
-```rust
-use std::{thread, time::Duration};
-
-use unknownrori_simple_thread_pool::{
-    crossbeam_channel::unbounded,
-    error::ThreadPoolError,
-    ThreadPool,
-};
-
-fn main() -> Result<(), ThreadPoolError> {
-    let pool = ThreadPool::new(2);
-    let (send, recv) = unbounded();
-
-    pool.execute(move || {
-        send.send(40).unwrap();
-    })?;
-
-    assert_eq!(recv.recv().unwrap(), 40);
-
-    Ok(())
-}
-
-### mpsc
-
-To use `std::sync::mpsc` instead of `crossbeam-channel` package, run this command
-
-```sh
+# If you want to use mpsc from rust standard library
 > cargo add unknownrori-simple-thread-pool --no-default-features -F mpsc
 ```
 
 ```rust
-use std::sync::mpsc::channel;
-use std::{thread, time::Duration};
+use std::{
+    io::Write,
+    net::{TcpListener, TcpStream},
+    thread,
+    time::Duration,
+};
 
 use unknownrori_simple_thread_pool::{error::ThreadPoolError, ThreadPool};
 
+fn handle_connection(mut stream: TcpStream) {
+    thread::sleep(Duration::from_secs(2));
+
+    let response = "HTTP/1.1 200 OK\r\nContent-Length: 3\r\n\r\nHi!";
+
+    stream.write_all(response.as_bytes()).unwrap();
+
+    thread::sleep(Duration::from_secs(2));
+}
+
 fn main() -> Result<(), ThreadPoolError> {
     let pool = ThreadPool::new(2);
-    let (send, recv) = channel();
 
-    pool.execute(move || {
-        send.send(40).unwrap();
-    })?;
+    let socket = TcpListener::bind("127.0.0.1:8000").unwrap();
+    println!("server started at http://127.0.0.1:8000");
 
-    assert_eq!(recv.recv().unwrap(), 40);
+    for stream in socket.incoming() {
+        println!("Got stream!");
+
+        match stream {
+            Ok(stream) => pool.execute(|| handle_connection(stream))?,
+            Err(_) => eprintln!("Something is wrong!"),
+        }
+    }
 
     Ok(())
 }
