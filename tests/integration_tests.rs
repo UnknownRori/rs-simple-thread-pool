@@ -45,9 +45,9 @@ mod mpsc {
 mod crossbeam {
     use std::{thread, time::Duration};
 
-    use crossbeam_channel::unbounded;
-
-    use unknownrori_simple_thread_pool::{error::ThreadPoolError, ThreadPool};
+    use unknownrori_simple_thread_pool::{
+        crossbeam_channel::unbounded, error::ThreadPoolError, ThreadPool,
+    };
 
     /// Test the crossbeam thread pooling implementation
     ///

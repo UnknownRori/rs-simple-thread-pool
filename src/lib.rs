@@ -3,6 +3,8 @@ pub mod error;
 mod message;
 mod worker;
 
+pub use crossbeam_channel;
+
 #[cfg(feature = "crossbeam")]
 use crossbeam_channel::{unbounded, Sender};
 
