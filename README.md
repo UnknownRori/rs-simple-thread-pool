@@ -1,30 +1,16 @@
-# Rust-Simple-ThreadPool
+# Rust-Simple-Thread-Pool
 
-A very simple thread pool for networking and other stuff.
-
-## 🛠️ Development
-
-Make sure you have installed cargo and git
-
-```bash
-# clone repository
-> git clone https://github.com/UnknownRori/rs-simple-thread-pool
-
-# enter cloned repository
-> cd simple-rust-thread-pool
-
-# build the library
-> cargo build
-```
+A Thread Pool that focused on lightweight.
 
 ## 🚀 Usage
 
-add this to your `Cargo.toml`
+By default `unknownrori-simple-thread-pool` uses `crossbeam-channel` not `mpsc` that standard library provided
 
-```toml
-[dependencies]
-unknownrori-simple-thread-pool = 0.1.2
+```sh
+> cargo add unknownrori-simple-thread-pool
 ```
+
+### crossbeam-channel
 
 ```rust
 use std::{thread, time::Duration};
@@ -39,34 +25,21 @@ fn main() -> Result<(), ThreadPoolError> {
     let pool = ThreadPool::new(2);
     let (send, recv) = unbounded();
 
-    for _ in 0..4 {
-        let send = send.clone();
-
-        pool.execute(move || {
-            for _ in 0..40 {
-                // Simulate long process
-                thread::sleep(Duration::from_millis(10));
-            }
-
-            send.send(40).unwrap();
-        })?;
-    }
+    pool.execute(move || {
+        send.send(40).unwrap();
+    })?;
 
     assert_eq!(recv.recv().unwrap(), 40);
-    assert_eq!(recv.recv().unwrap(), 40);
-    assert_eq!(recv.recv().unwrap(), 40);
-    assert_eq!(recv.recv().unwrap(), 40);
-    assert_eq!(recv.try_recv().is_err(), true);
 
     Ok(())
 }
-```
 
-if you want to use stdlib this
+### mpsc
 
-```toml
-[dependencies]
-unknownrori-simple-thread-pool = { version = "0.1.2", default-features = false, features = ["mpsc"] }
+To use `std::sync::mpsc` instead of `crossbeam-channel` package, run this command
+
+```sh
+> cargo add unknownrori-simple-thread-pool --no-default-features -F mpsc
 ```
 
 ```rust
@@ -77,30 +50,31 @@ use unknownrori_simple_thread_pool::{error::ThreadPoolError, ThreadPool};
 
 fn main() -> Result<(), ThreadPoolError> {
     let pool = ThreadPool::new(2);
-
     let (send, recv) = channel();
 
-    for _ in 0..4 {
-        let send = send.clone();
-
-        pool.execute(move || {
-            for _ in 0..40 {
-                // Simulate long process
-                thread::sleep(Duration::from_millis(10));
-            }
-
-            send.send(40).unwrap();
-        })?;
-    }
+    pool.execute(move || {
+        send.send(40).unwrap();
+    })?;
 
     assert_eq!(recv.recv().unwrap(), 40);
-    assert_eq!(recv.recv().unwrap(), 40);
-    assert_eq!(recv.recv().unwrap(), 40);
-    assert_eq!(recv.recv().unwrap(), 40);
-    assert_eq!(recv.try_recv().is_err(), true);
 
     Ok(())
 }
+```
+
+## 🛠️ Development
+
+Make sure you have installed cargo and git
+
+```bash
+# clone repository
+> git clone https://github.com/UnknownRori/rs-simple-thread-pool
+
+# enter cloned repository
+> cd simple-rust-thread-pool
+
+# build the library
+> cargo build
 ```
 
 ## 🌟 Contribution
