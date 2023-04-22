@@ -21,7 +21,7 @@ Make sure you have installed cargo and git
 
 add this to your `Cargo.toml`
 
-`unknownrori-simple-thread-pool = 0.1.1`
+`unknownrori-simple-thread-pool = 0.1.2`
 
 ```rust
 use std::{thread, time::Duration};
@@ -59,7 +59,7 @@ fn main() -> Result<(), ThreadPoolError> {
 
 if you want to use stdlib this
 
-`unknownrori-simple-thread-pool = { version = "0.1.1", default-features = false, features = ["mpsc"]}`
+`unknownrori-simple-thread-pool = { version = "0.1.2", default-features = false, features = ["mpsc"]}`
 
 ```rust
 use std::sync::mpsc::channel;
