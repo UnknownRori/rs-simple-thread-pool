@@ -21,13 +21,18 @@ Make sure you have installed cargo and git
 
 add this to your `Cargo.toml`
 
-`unknownrori-simple-thread-pool = 0.1.2`
+```toml
+[dependencies]
+unknownrori-simple-thread-pool = 0.1.2
+```
 
 ```rust
 use std::{thread, time::Duration};
 
 use unknownrori_simple_thread_pool::{
-    crossbeam_channel::unbounded, error::ThreadPoolError, ThreadPool,
+    crossbeam_channel::unbounded,
+    error::ThreadPoolError,
+    ThreadPool,
 };
 
 fn main() -> Result<(), ThreadPoolError> {
@@ -59,7 +64,10 @@ fn main() -> Result<(), ThreadPoolError> {
 
 if you want to use stdlib this
 
-`unknownrori-simple-thread-pool = { version = "0.1.2", default-features = false, features = ["mpsc"]}`
+```toml
+[dependencies]
+unknownrori-simple-thread-pool = { version = "0.1.2", default-features = false, features = ["mpsc"] }
+```
 
 ```rust
 use std::sync::mpsc::channel;
