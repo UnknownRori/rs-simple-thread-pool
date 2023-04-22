@@ -3,6 +3,7 @@ pub mod error;
 mod message;
 mod worker;
 
+#[cfg(feature = "crossbeam")]
 pub use crossbeam_channel;
 
 #[cfg(feature = "crossbeam")]
