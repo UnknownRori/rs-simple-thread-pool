@@ -1,4 +1,12 @@
+#[cfg(feature = "crossbeam")]
 use crossbeam_channel::Receiver;
+
+#[cfg(feature = "mpsc")]
+use std::sync::mpsc::Receiver;
+
+#[cfg(feature = "mpsc")]
+use std::sync::{Arc, Mutex};
+
 use std::thread::{self, JoinHandle};
 
 use crate::message::Message;
@@ -22,6 +30,25 @@ impl Worker {
                 Err(_) => Message::Idle,
             };
 
+            // Todo : Refactor this
+            let _ = match message {
+                Message::NewJob(job) => job(),
+                Message::Terminate => break,
+                Message::Idle => (),
+            };
+        });
+
+        Worker {
+            thread: Some(thread),
+        }
+    }
+
+    #[cfg(feature = "mpsc")]
+    pub fn new(receiver: Arc<Mutex<Receiver<Message>>>) -> Worker {
+        let thread = thread::spawn(move || loop {
+            let message = receiver.lock().unwrap().recv().unwrap();
+
+            // Todo : Refactor this
             let _ = match message {
                 Message::NewJob(job) => job(),
                 Message::Terminate => break,
