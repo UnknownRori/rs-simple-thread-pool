@@ -38,6 +38,17 @@ mod mpsc {
 
         Ok(())
     }
+
+    #[test]
+    #[should_panic]
+    fn panic_inside_worker() {
+        let pool = ThreadPool::new(2);
+
+        pool.execute(|| {
+            panic!("Oh no!");
+        })
+        .unwrap();
+    }
 }
 
 #[cfg(feature = "crossbeam")]
@@ -79,5 +90,16 @@ mod crossbeam {
         assert_eq!(recv.try_recv().is_err(), true);
 
         Ok(())
+    }
+
+    #[test]
+    #[should_panic]
+    fn panic_inside_worker() {
+        let pool = ThreadPool::new(2);
+
+        pool.execute(|| {
+            panic!("Oh no!");
+        })
+        .unwrap();
     }
 }
