@@ -25,17 +25,12 @@ impl Worker {
     #[cfg(feature = "crossbeam")]
     pub fn new(receiver: Receiver<Message>) -> Worker {
         let thread = thread::spawn(move || loop {
-            let message = match receiver.recv() {
-                Ok(message) => message,
-                Err(_) => Message::Idle,
-            };
-
-            // Todo : Refactor this
-            let _ = match message {
-                Message::NewJob(job) => job(),
-                Message::Terminate => break,
-                Message::Idle => (),
-            };
+            if let Ok(message) = receiver.recv() {
+                let _ = match message {
+                    Message::NewJob(job) => job(),
+                    Message::Terminate => break,
+                };
+            }
         });
 
         Worker {
@@ -46,13 +41,9 @@ impl Worker {
     #[cfg(feature = "mpsc")]
     pub fn new(receiver: Arc<Mutex<Receiver<Message>>>) -> Worker {
         let thread = thread::spawn(move || loop {
-            let message = receiver.lock().unwrap().recv().unwrap();
-
-            // Todo : Refactor this
-            let _ = match message {
+            let _ = match receiver.lock().unwrap().recv().unwrap() {
                 Message::NewJob(job) => job(),
                 Message::Terminate => break,
-                Message::Idle => (),
             };
         });
 
