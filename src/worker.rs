@@ -38,6 +38,11 @@ impl Worker {
         }
     }
 
+    /// Creates a new [`Worker`].
+    ///
+    /// ## Panic
+    ///
+    /// May panic when the OS cannot create thread
     #[cfg(feature = "mpsc")]
     pub fn new(receiver: Arc<Mutex<Receiver<Message>>>) -> Worker {
         let thread = thread::spawn(move || loop {
@@ -52,7 +57,7 @@ impl Worker {
         }
     }
 
-    /// Returns the take thread of this [`Worker`].
+    /// Take the ownership of [`JoinHandle`]
     pub fn take_thread(&mut self) -> Option<JoinHandle<()>> {
         self.thread.take()
     }

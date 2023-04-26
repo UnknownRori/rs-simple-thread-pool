@@ -73,7 +73,7 @@ pub struct ThreadPool {
 }
 
 impl ThreadPool {
-    /// Creates a new [`ThreadPool`].
+    /// Creates a new [`ThreadPool`], with passed worker args for how many worker thread to be created
     ///
     /// ## Examples
     ///
@@ -116,7 +116,7 @@ impl ThreadPool {
         ThreadPool { workers, sender }
     }
 
-    /// Creates a new [`ThreadPool`].
+    /// Creates a new [`ThreadPool`], with passed worker args for how many worker thread to be created
     ///
     /// ## Examples
     ///
