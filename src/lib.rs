@@ -15,7 +15,7 @@ use std::sync::mpsc::{channel, Sender};
 #[cfg(feature = "mpsc")]
 use std::sync::{Arc, Mutex};
 
-use error::ThreadPoolError;
+use error::{FailedToSpawnThread, ThreadPoolError};
 use message::Message;
 use worker::Worker;
 
@@ -144,17 +144,21 @@ impl ThreadPool {
     ///
     /// May panic if the OS cannot create thread
     #[cfg(feature = "mpsc")]
-    pub fn new(worker: usize) -> ThreadPool {
+    pub fn new(worker: usize) -> Result<ThreadPool, FailedToSpawnThread> {
         let mut workers = Vec::with_capacity(worker);
 
         let (sender, receiver) = channel();
         let receiver = Arc::new(Mutex::new(receiver));
 
+        let thread_builder = std::thread::Builder::new();
         for _ in 0..worker {
-            workers.push(Worker::new(Arc::clone(&receiver)));
+            let worker = Worker::new(Arc::clone(&receiver), &thread_builder)
+                .or_else(|_| Err(FailedToSpawnThread))?;
+
+            workers.push(worker);
         }
 
-        ThreadPool { workers, sender }
+        Ok(ThreadPool { sender, workers })
     }
 
     /// Execute a job to worker thread, it's require Closure with no param and no return

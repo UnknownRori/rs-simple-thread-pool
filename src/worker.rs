@@ -7,6 +7,7 @@ use std::sync::mpsc::Receiver;
 #[cfg(feature = "mpsc")]
 use std::sync::{Arc, Mutex};
 
+use std::io;
 use std::thread::{self, JoinHandle};
 
 use crate::message::Message;
@@ -23,19 +24,22 @@ impl Worker {
     ///
     /// May panic when the OS cannot create thread
     #[cfg(feature = "crossbeam")]
-    pub fn new(receiver: Receiver<Message>) -> Worker {
-        let thread = thread::spawn(move || loop {
+    pub fn new(
+        receiver: Receiver<Message>,
+        thread_builder: &thread::Builder,
+    ) -> io::Result<Worker> {
+        let thread = thread_builder.spawn(move || loop {
             if let Ok(message) = receiver.recv() {
                 let _ = match message {
                     Message::NewJob(job) => job(),
                     Message::Terminate => break,
                 };
             }
-        });
+        })?;
 
-        Worker {
+        Ok(Worker {
             thread: Some(thread),
-        }
+        })
     }
 
     /// Creates a new [`Worker`].
@@ -44,17 +48,20 @@ impl Worker {
     ///
     /// May panic when the OS cannot create thread
     #[cfg(feature = "mpsc")]
-    pub fn new(receiver: Arc<Mutex<Receiver<Message>>>) -> Worker {
-        let thread = thread::spawn(move || loop {
+    pub fn new(
+        receiver: Arc<Mutex<Receiver<Message>>>,
+        thread_builder: &thread::Builder,
+    ) -> io::Result<Worker> {
+        let thread = thread_builder.spawn(move || loop {
             let _ = match receiver.lock().unwrap().recv().unwrap() {
                 Message::NewJob(job) => job(),
                 Message::Terminate => break,
             };
-        });
+        })?;
 
-        Worker {
+        Ok(Worker {
             thread: Some(thread),
-        }
+        })
     }
 
     /// Take the ownership of [`JoinHandle`]
