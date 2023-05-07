@@ -15,6 +15,7 @@ impl core::fmt::Display for ThreadPoolError {
     }
 }
 
+#[derive(Debug)]
 pub struct FailedToSpawnThread;
 
 impl core::fmt::Display for FailedToSpawnThread {
