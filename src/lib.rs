@@ -104,16 +104,21 @@ impl ThreadPool {
     ///
     /// May panic if the OS cannot create thread
     #[cfg(feature = "crossbeam")]
-    pub fn new(worker: usize) -> ThreadPool {
+    pub fn new(worker: usize) -> Result<ThreadPool, FailedToSpawnThread> {
         let mut workers = Vec::with_capacity(worker);
 
         let (sender, receiver) = unbounded();
 
         for _ in 0..worker {
-            workers.push(Worker::new(receiver.clone()));
+            let thread_builder = std::thread::Builder::new();
+
+            let worker = Worker::new(receiver.clone(), thread_builder)
+                .or_else(|_| Err(FailedToSpawnThread))?;
+
+            workers.push(worker)
         }
 
-        ThreadPool { workers, sender }
+        Ok(ThreadPool { workers, sender })
     }
 
     /// Creates a new [`ThreadPool`], with passed worker args for how many worker thread to be created
@@ -150,9 +155,10 @@ impl ThreadPool {
         let (sender, receiver) = channel();
         let receiver = Arc::new(Mutex::new(receiver));
 
-        let thread_builder = std::thread::Builder::new();
         for _ in 0..worker {
-            let worker = Worker::new(Arc::clone(&receiver), &thread_builder)
+            let thread_builder = std::thread::Builder::new();
+
+            let worker = Worker::new(Arc::clone(&receiver), thread_builder)
                 .or_else(|_| Err(FailedToSpawnThread))?;
 
             workers.push(worker);

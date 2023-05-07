@@ -24,10 +24,7 @@ impl Worker {
     ///
     /// May panic when the OS cannot create thread
     #[cfg(feature = "crossbeam")]
-    pub fn new(
-        receiver: Receiver<Message>,
-        thread_builder: &thread::Builder,
-    ) -> io::Result<Worker> {
+    pub fn new(receiver: Receiver<Message>, thread_builder: thread::Builder) -> io::Result<Worker> {
         let thread = thread_builder.spawn(move || loop {
             if let Ok(message) = receiver.recv() {
                 let _ = match message {
@@ -50,7 +47,7 @@ impl Worker {
     #[cfg(feature = "mpsc")]
     pub fn new(
         receiver: Arc<Mutex<Receiver<Message>>>,
-        thread_builder: &thread::Builder,
+        thread_builder: thread::Builder,
     ) -> io::Result<Worker> {
         let thread = thread_builder.spawn(move || loop {
             let _ = match receiver.lock().unwrap().recv().unwrap() {
