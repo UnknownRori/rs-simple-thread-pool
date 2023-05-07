@@ -13,7 +13,7 @@ mod mpsc {
     /// It may panic if the OS cannot create a thread
     #[test]
     fn test_mpsc() -> Result<(), ThreadPoolError> {
-        let pool = ThreadPool::new(2);
+        let pool = ThreadPool::new(2).unwrap();
 
         let (send, recv) = channel();
 
@@ -42,7 +42,7 @@ mod mpsc {
     #[test]
     #[should_panic]
     fn panic_inside_worker() {
-        let pool = ThreadPool::new(2);
+        let pool = ThreadPool::new(2).unwrap();
 
         pool.execute(|| {
             panic!("Oh no!");
@@ -67,7 +67,7 @@ mod crossbeam {
     /// It may panic if the OS cannot create a thread
     #[test]
     fn test_crossbeam() -> Result<(), ThreadPoolError> {
-        let pool = ThreadPool::new(2);
+        let pool = ThreadPool::new(2).unwrap();
         let (send, recv) = unbounded();
 
         for _ in 0..4 {
@@ -95,7 +95,7 @@ mod crossbeam {
     #[test]
     #[should_panic]
     fn panic_inside_worker() {
-        let pool = ThreadPool::new(2);
+        let pool = ThreadPool::new(2).unwrap();
 
         pool.execute(|| {
             panic!("Oh no!");
