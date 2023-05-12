@@ -1,9 +1,9 @@
 [package]
 name = "unknownrori-simple-thread-pool"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 authors = ["UnknownRori <68576836+UnknownRori@users.noreply.github.com>"]
-description = "A very simple thread pool for networking and other stuff"
+description = "A lighweight thread pool for networking and other stuff"
 license = "MIT"
 repository = "https://github.com/UnknownRori/rs-simple-thread-pool"
 keywords = ["thread", "parallel", "concurrency"]
