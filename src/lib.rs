@@ -100,9 +100,9 @@ impl ThreadPool {
     /// }
     /// ```
     ///
-    /// ## Panic
+    /// ## Error
     ///
-    /// May panic if the OS cannot create thread
+    /// It will return an [`Err`] if cannot create thread worker
     #[cfg(feature = "crossbeam")]
     pub fn new(worker: usize) -> Result<ThreadPool, FailedToSpawnThread> {
         let workers = Vec::with_capacity(worker);
@@ -146,9 +146,9 @@ impl ThreadPool {
     /// }
     /// ```
     ///
-    /// ## Panic
+    /// ## Error
     ///
-    /// May panic if the OS cannot create thread
+    /// It will return an [`Err`] if cannot create thread worker
     #[cfg(feature = "mpsc")]
     pub fn new(worker: usize) -> Result<ThreadPool, FailedToSpawnThread> {
         let workers = Vec::with_capacity(worker);
@@ -173,21 +173,27 @@ impl ThreadPool {
     ///
     /// ## Errors
     ///
-    /// This function will return an error if the communication channel between worker thread
+    /// This function will return an [`Err`] if the communication channel between worker thread
     /// and main thread is closed.
-    pub fn execute<F>(&self, job: F) -> Result<(), ThreadPoolError>
+    pub fn execute<F>(&self, job: F) -> Result<(), FailedToSendJob>
     where
         F: FnOnce() + Send + 'static,
     {
         self.sender
             .send(Message::NewJob(Box::new(job)))
-            .or_else(|_| Err(ThreadPoolError::FailedToSendJob))?;
+            .or_else(|_| Err(FailedToSendJob))?;
 
         Ok(())
     }
 }
 
 impl Drop for ThreadPool {
+    /// Make sure the [`ThreadPool`] do proper clean up with it's thread workers
+    ///
+    /// ## Panic
+    ///
+    /// May Panic if communcation between worker thread and main thread is closed
+    /// or there are panic in worker thread.
     fn drop(&mut self) {
         for _ in &self.workers {
             self.sender.send(Message::Terminate).unwrap();

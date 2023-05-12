@@ -20,9 +20,9 @@ pub struct Worker {
 impl Worker {
     /// Creates a new [`Worker`].
     ///
-    /// ## Panic
+    /// ## Error
     ///
-    /// May panic when the OS cannot create thread
+    /// Will return [`Err`] if it cannot create a thread
     #[cfg(feature = "crossbeam")]
     pub fn new(receiver: Receiver<Message>, thread_builder: thread::Builder) -> io::Result<Worker> {
         let thread = thread_builder.spawn(move || loop {
@@ -41,9 +41,9 @@ impl Worker {
 
     /// Creates a new [`Worker`].
     ///
-    /// ## Panic
+    /// ## Error
     ///
-    /// May panic when the OS cannot create thread
+    /// Will return [`Err`] if it cannot create a thread
     #[cfg(feature = "mpsc")]
     pub fn new(
         receiver: Arc<Mutex<Receiver<Message>>>,
