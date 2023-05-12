@@ -15,7 +15,7 @@ use std::sync::mpsc::{channel, Sender};
 #[cfg(feature = "mpsc")]
 use std::sync::{Arc, Mutex};
 
-use error::{FailedToSpawnThread, ThreadPoolError};
+use error::{FailedToSendJob, FailedToSpawnThread};
 use message::Message;
 use worker::Worker;
 
@@ -37,7 +37,7 @@ type Job = Box<dyn FnOnce() + Send + 'static>;
 ///     time::Duration,
 /// };
 ///
-/// use unknownrori_simple_thread_pool::{error::ThreadPoolError, ThreadPool};
+/// use unknownrori_simple_thread_pool::{error::FailedToSendJob, ThreadPool};
 ///
 /// fn handle_connection(mut stream: TcpStream) {
 ///     thread::sleep(Duration::from_secs(2));
@@ -49,7 +49,7 @@ type Job = Box<dyn FnOnce() + Send + 'static>;
 ///     thread::sleep(Duration::from_secs(2));
 /// }
 ///
-/// fn main() -> Result<(), ThreadPoolError> {
+/// fn main() -> Result<(), FailedToSendJob> {
 ///     let pool = ThreadPool::new(2).unwrap();
 ///
 ///     let socket = TcpListener::bind("127.0.0.1:8000").unwrap();
@@ -82,11 +82,11 @@ impl ThreadPool {
     ///
     /// use unknownrori_simple_thread_pool::{
     ///     crossbeam_channel::unbounded,
-    ///     error::ThreadPoolError,
+    ///     error::FailedToSendJob,
     ///     ThreadPool,
     /// };
     ///
-    /// fn main() -> Result<(), ThreadPoolError> {
+    /// fn main() -> Result<(), FailedToSendJob> {
     ///     let pool = ThreadPool::new(2).unwrap();
     ///     let (send, recv) = unbounded();
     ///
@@ -130,9 +130,9 @@ impl ThreadPool {
     /// use std::sync::mpsc::channel;
     /// use std::{thread, time::Duration};
     ///
-    /// use unknownrori_simple_thread_pool::{error::ThreadPoolError, ThreadPool};
+    /// use unknownrori_simple_thread_pool::{error::FailedToSendJob, ThreadPool};
     ///
-    /// fn main() -> Result<(), ThreadPoolError> {
+    /// fn main() -> Result<(), FailedToSendJob> {
     ///     let pool = ThreadPool::new(2).unwrap();
     ///     let (send, recv) = channel();
     ///

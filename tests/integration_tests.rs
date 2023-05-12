@@ -4,7 +4,7 @@ mod mpsc {
     use std::sync::mpsc::channel;
     use std::{thread, time::Duration};
 
-    use unknownrori_simple_thread_pool::{error::ThreadPoolError, ThreadPool};
+    use unknownrori_simple_thread_pool::{error::FailedToSendJob, ThreadPool};
 
     /// Test the crossbeam thread pooling implementation
     ///
@@ -12,7 +12,7 @@ mod mpsc {
     ///
     /// It may panic if the OS cannot create a thread
     #[test]
-    fn test_mpsc() -> Result<(), ThreadPoolError> {
+    fn test_mpsc() -> Result<(), FailedToSendJob> {
         let pool = ThreadPool::new(2).unwrap();
 
         let (send, recv) = channel();
@@ -57,7 +57,7 @@ mod crossbeam {
     use std::{thread, time::Duration};
 
     use unknownrori_simple_thread_pool::{
-        crossbeam_channel::unbounded, error::ThreadPoolError, ThreadPool,
+        crossbeam_channel::unbounded, error::FailedToSendJob, ThreadPool,
     };
 
     /// Test the crossbeam thread pooling implementation
@@ -66,7 +66,7 @@ mod crossbeam {
     ///
     /// It may panic if the OS cannot create a thread
     #[test]
-    fn test_crossbeam() -> Result<(), ThreadPoolError> {
+    fn test_crossbeam() -> Result<(), FailedToSendJob> {
         let pool = ThreadPool::new(2).unwrap();
         let (send, recv) = unbounded();
 
