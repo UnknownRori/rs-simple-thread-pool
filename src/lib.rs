@@ -50,7 +50,7 @@ type Job = Box<dyn FnOnce() + Send + 'static>;
 /// }
 ///
 /// fn main() -> Result<(), ThreadPoolError> {
-///     let pool = ThreadPool::new(2);
+///     let pool = ThreadPool::new(2).unwrap();
 ///
 ///     let socket = TcpListener::bind("127.0.0.1:8000").unwrap();
 ///     println!("server started at http://127.0.0.1:8000");
@@ -87,7 +87,7 @@ impl ThreadPool {
     /// };
     ///
     /// fn main() -> Result<(), ThreadPoolError> {
-    ///     let pool = ThreadPool::new(2);
+    ///     let pool = ThreadPool::new(2).unwrap();
     ///     let (send, recv) = unbounded();
     ///
     ///     pool.execute(move || {
@@ -105,20 +105,21 @@ impl ThreadPool {
     /// May panic if the OS cannot create thread
     #[cfg(feature = "crossbeam")]
     pub fn new(worker: usize) -> Result<ThreadPool, FailedToSpawnThread> {
-        let mut workers = Vec::with_capacity(worker);
+        let workers = Vec::with_capacity(worker);
 
         let (sender, receiver) = unbounded();
 
+        let mut threadpool = ThreadPool { workers, sender };
         for _ in 0..worker {
             let thread_builder = std::thread::Builder::new();
 
             let worker = Worker::new(receiver.clone(), thread_builder)
                 .or_else(|_| Err(FailedToSpawnThread))?;
 
-            workers.push(worker)
+            threadpool.workers.push(worker);
         }
 
-        Ok(ThreadPool { workers, sender })
+        Ok(threadpool)
     }
 
     /// Creates a new [`ThreadPool`], with passed worker args for how many worker thread to be created
@@ -132,7 +133,7 @@ impl ThreadPool {
     /// use unknownrori_simple_thread_pool::{error::ThreadPoolError, ThreadPool};
     ///
     /// fn main() -> Result<(), ThreadPoolError> {
-    ///     let pool = ThreadPool::new(2);
+    ///     let pool = ThreadPool::new(2).unwrap();
     ///     let (send, recv) = channel();
     ///
     ///     pool.execute(move || {
@@ -150,21 +151,22 @@ impl ThreadPool {
     /// May panic if the OS cannot create thread
     #[cfg(feature = "mpsc")]
     pub fn new(worker: usize) -> Result<ThreadPool, FailedToSpawnThread> {
-        let mut workers = Vec::with_capacity(worker);
+        let workers = Vec::with_capacity(worker);
 
         let (sender, receiver) = channel();
         let receiver = Arc::new(Mutex::new(receiver));
 
+        let mut threadpool = ThreadPool { sender, workers };
         for _ in 0..worker {
             let thread_builder = std::thread::Builder::new();
 
             let worker = Worker::new(Arc::clone(&receiver), thread_builder)
                 .or_else(|_| Err(FailedToSpawnThread))?;
 
-            workers.push(worker);
+            threadpool.workers.push(worker);
         }
 
-        Ok(ThreadPool { sender, workers })
+        Ok(threadpool)
     }
 
     /// Execute a job to worker thread, it's require Closure with no param and no return
