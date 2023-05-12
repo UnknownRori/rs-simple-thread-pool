@@ -22,7 +22,7 @@ use std::{
     time::Duration,
 };
 
-use unknownrori_simple_thread_pool::{error::ThreadPoolError, ThreadPool};
+use unknownrori_simple_thread_pool::{error::FailedToSendJob, ThreadPool};
 
 fn handle_connection(mut stream: TcpStream) {
     thread::sleep(Duration::from_secs(2));
@@ -35,7 +35,7 @@ fn handle_connection(mut stream: TcpStream) {
 }
 
 fn main() -> Result<(), ThreadPoolError> {
-    let pool = ThreadPool::new(2);
+    let pool = ThreadPool::new(2).unwrap();
 
     let socket = TcpListener::bind("127.0.0.1:8000").unwrap();
     println!("server started at http://127.0.0.1:8000");
