@@ -1,6 +1,6 @@
 [package]
 name = "unknownrori-simple-thread-pool"
-version = "0.1.5"
+version = "0.2.0"
 edition = "2021"
 authors = ["UnknownRori <68576836+UnknownRori@users.noreply.github.com>"]
 description = "A lighweight thread pool for networking and other stuff"
